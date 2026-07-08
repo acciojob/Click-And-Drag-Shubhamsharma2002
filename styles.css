@@ -20,17 +20,17 @@ body {
 
 .items {
   height: 800px;
-  width: 1000px; /* Changed from 100% to a fixed width to represent a "defined area" */
-  border: 1px solid white;
-  overflow: hidden; /* Changed from scroll to hidden so dragged items don't stretch the box */
+  width: 100%;
+  overflow-x: scroll; /* Mandatory: allows horizontal scrolling */
+  white-space: nowrap; /* Mandatory: keeps items in one single line */
   user-select: none;
-  transition: background 0.2s, transform 0.2s;
-  transform: scale(0.98);
-  will-change: transform;
-  position: relative; /* Crucial: anchors absolutely-positioned items inside */
-  background: rgba(255,255,255,0.1);
-	overflow-x: scroll; /* Must be scroll to allow scrollLeft to change */
-  white-space: nowrap;
+  cursor: grab;
+}
+
+.item {
+  width: 200px;
+  display: inline-flex; /* Mandatory: makes items flow horizontally */
+  /* Remove any absolute positioning or transform: scaleX/rotateY here */
 }
 
 .items.active {
@@ -38,20 +38,7 @@ body {
   transform: scale(1);
 }
 
-.item {
-  width: 150px;  /* Sized down slightly so 25 cubes fit nicely into a grid */
-  height: 120px;
-  position: absolute; /* Crucial: allows JS to move items anywhere using top/left coordinates */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 40px;
-  font-weight: 100;
-  color: rgba(0,0,0,0.4);
-  box-shadow: inset 0 0 0 5px rgba(0,0,0,0.15);
-  cursor: grab;
-  /* Removed the 3D rotateY and scaleX transforms which break dragging positioning */
-}
+
 
 .item:active {
   cursor: grabbing;
