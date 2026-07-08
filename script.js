@@ -1,73 +1,39 @@
-// Your code here.
-const container = document.querySelector('.items');
-const items = document.querySelectorAll('.item');
+const slider = document.querySelector('.items');
+let isDown = false;
+let startX;
+let scrollLeft;
 
-// Position the items in an initial layout grid or spread upon load
-// so they do not stack on top of each other at top: 0, left: 0
-items.forEach((item, index) => {
-  const itemsPerRow = 5;
-  const row = Math.floor(index / itemsPerRow);
-  const col = index % itemsPerRow;
+slider.addEventListener('mousedown', (e) => {
+  isDown = true;
+  slider.classList.add('active');
   
-  item.style.left = `${col * 220 + 20}px`;
-  item.style.top = `${row * 150 + 20}px`;
-  item.style.height = '120px'; // Set a concrete height for independent movement
-});
-
-let activeItem = null;
-let startX = 0;
-let startY = 0;
-let initialLeft = 0;
-let initialTop = 0;
-
-// Listen for interactions on individual items
-items.forEach(item => {
-  item.addEventListener('mousedown', (e) => {
-    activeItem = item;
-    container.classList.add('active');
-    
-    // Get mouse pointer position relative to viewport
-    startX = e.clientX;
-    startY = e.clientY;
-    
-    // Parse current positioning coordinates
-    initialLeft = parseInt(item.style.left) || 0;
-    initialTop = parseInt(item.style.top) || 0;
-  });
-});
-
-// Move behavior attached to global window for seamless tracking
-window.addEventListener('mousemove', (e) => {
-  if (!activeItem) return;
-
-  // Calculate cursor displacement delta
-  const deltaX = e.clientX - startX;
-  const deltaY = e.clientY - startY;
-
-  // Potential new coordinates
-  let newLeft = initialLeft + deltaX;
-  let newTop = initialTop + deltaY;
-
-  // Establish boundaries using container limitations
-  const maxLeft = container.clientWidth - activeItem.clientWidth;
-  const maxTop = container.clientHeight - activeItem.clientHeight;
-
-  // Bound limits constraint: Restrict within 0 and maximum threshold
-  if (newLeft < 0) newLeft = 0;
-  if (newLeft > maxLeft) newLeft = maxLeft;
+  // Calculate exact initial click coordinates inside the container
+  startX = e.pageX - slider.offsetLeft;
   
-  if (newTop < 0) newTop = 0;
-  if (newTop > maxTop) newTop = maxTop;
-
-  // Apply positions safely
-  activeItem.style.left = `${newLeft}px`;
-  activeItem.style.top = `${newTop}px`;
+  // Cache the starting position of the horizontal scrollbar
+  scrollLeft = slider.scrollLeft;
 });
 
-// Reset tracking states when tracking session finishes
-window.addEventListener('mouseup', () => {
-  if (activeItem) {
-    container.classList.remove('active');
-    activeItem = null;
-  }
+slider.addEventListener('mouseleave', () => {
+  isDown = false;
+  slider.classList.remove('active');
+});
+
+slider.addEventListener('mouseup', () => {
+  isDown = false;
+  slider.classList.remove('active');
+});
+
+slider.addEventListener('mousemove', (e) => {
+  if (!isDown) return; // Stop the function from running if mouse isn't held down
+  e.preventDefault();  // Stop default text selection or image dragging antics
+  
+  // Track cursor location relative to container while moving
+  const x = e.pageX - slider.offsetLeft;
+  
+  // Determine how far the user has dragged (multiplied by a speed factor if desired)
+  const walk = (x - startX) * 2; 
+  
+  // Update the container scroll mechanism (subtracting shifts it in natural dragging direction)
+  slider.scrollLeft = scrollLeft - walk;
 });

@@ -29,6 +29,8 @@ body {
   will-change: transform;
   position: relative; /* Crucial: anchors absolutely-positioned items inside */
   background: rgba(255,255,255,0.1);
+	overflow-x: scroll; /* Must be scroll to allow scrollLeft to change */
+  white-space: nowrap;
 }
 
 .items.active {
