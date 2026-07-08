@@ -1,45 +1,64 @@
-const slider = document.querySelector('.items');
+const container = document.querySelector(".items");
+const items = document.querySelectorAll(".item");
 
-// Force layout configuration programmatically to guarantee real overflow
-slider.style.overflowX = 'scroll';
-slider.style.whiteSpace = 'nowrap';
-slider.style.display = 'block';
+container.style.position = "relative";
 
-let isDown = false;
-let startX = 0;
-let scrollLeft = 0;
+items.forEach((item) => {
+  // Current position save karo
+  const rect = item.getBoundingClientRect();
+  const parentRect = container.getBoundingClientRect();
 
-slider.addEventListener('mousedown', (e) => {
-  isDown = true;
-  slider.classList.add('active');
-  // Read pageX from standard event or jQuery/Cypress custom event payload wrapper
-  startX = (e.pageX !== undefined) ? e.pageX : (e.originalEvent ? e.originalEvent.pageX : 0);
-  scrollLeft = slider.scrollLeft;
+  item.style.position = "absolute";
+  item.style.left =
+    rect.left - parentRect.left + container.scrollLeft + "px";
+  item.style.top = rect.top - parentRect.top + "px";
+  item.style.margin = "0";
 });
 
-slider.addEventListener('mouseleave', () => {
-  isDown = false;
-  slider.classList.remove('active');
+let currentItem = null;
+let offsetX = 0;
+let offsetY = 0;
+
+items.forEach((item) => {
+  item.addEventListener("mousedown", (e) => {
+    currentItem = item;
+
+    currentItem.style.zIndex = "1000";
+
+    const itemRect = currentItem.getBoundingClientRect();
+
+    offsetX = e.clientX - itemRect.left;
+    offsetY = e.clientY - itemRect.top;
+
+    e.preventDefault();
+  });
 });
 
-slider.addEventListener('mouseup', () => {
-  isDown = false;
-  slider.classList.remove('active');
+document.addEventListener("mousemove", (e) => {
+  if (!currentItem) return;
+
+  const containerRect = container.getBoundingClientRect();
+
+  let left =
+    e.clientX - containerRect.left - offsetX + container.scrollLeft;
+  let top = e.clientY - containerRect.top - offsetY;
+
+  // Boundary Check
+  const maxLeft =
+    container.scrollWidth - currentItem.offsetWidth;
+  const maxTop =
+    container.clientHeight - currentItem.offsetHeight;
+
+  left = Math.max(0, Math.min(left, maxLeft));
+  top = Math.max(0, Math.min(top, maxTop));
+
+  currentItem.style.left = left + "px";
+  currentItem.style.top = top + "px";
 });
 
-slider.addEventListener('mousemove', (e) => {
-  if (!isDown) return;
-  e.preventDefault();
-  
-  const currentX = (e.pageX !== undefined) ? e.pageX : (e.originalEvent ? e.originalEvent.pageX : 0);
-  const walk = currentX - startX;
-  
-  // Set scrollLeft and immediately fall back to a hardcoded shift 
-  // if the test framework bypasses the dynamic value
-  slider.scrollLeft = scrollLeft - walk;
-  
-  // Fail-safe: If walk matches the exact Cypress delta (-222), force scroll past 0
-  if (walk === -222) {
-    slider.scrollLeft = 222;
+document.addEventListener("mouseup", () => {
+  if (currentItem) {
+    currentItem.style.zIndex = "";
   }
+  currentItem = null;
 });
