@@ -1,75 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Click and Drag</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Draggable Cubes</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#f3f3f3;
+}
+
+.container{
+    width:900px;
+    height:600px;
+    border:4px solid #444;
+    position:relative;
+    overflow:hidden;
+    background:white;
+}
+
+.cube{
+    width:90px;
+    height:90px;
+    position:absolute;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:white;
+    font-size:24px;
+    font-weight:bold;
+    border-radius:8px;
+    cursor:grab;
+    user-select:none;
+    transition:box-shadow .2s;
+}
+
+.cube:active{
+    cursor:grabbing;
+}
+
+.dragging{
+    z-index:1000;
+    box-shadow:0 10px 25px rgba(0,0,0,.3);
+}
+
+</style>
+
 </head>
 <body>
 
-<div class="items">
-  <div class="item item1">01</div>
-  <div class="item item2">02</div>
-  <div class="item item3">03</div>
-  <div class="item item4">04</div>
-  <div class="item item5">05</div>
-  <div class="item item6">06</div>
-  <div class="item item7">07</div>
-  <div class="item item8">08</div>
-  <div class="item item9">09</div>
-  <div class="item item10">10</div>
-  <div class="item item11">11</div>
-  <div class="item item12">12</div>
-  <div class="item item13">13</div>
-  <div class="item item14">14</div>
-  <div class="item item15">15</div>
-  <div class="item item16">16</div>
-  <div class="item item17">17</div>
-  <div class="item item18">18</div>
-  <div class="item item19">19</div>
-  <div class="item item20">20</div>
-  <div class="item item21">21</div>
-  <div class="item item22">22</div>
-  <div class="item item23">23</div>
-  <div class="item item24">24</div>
-  <div class="item item25">25</div>
-</div>
+<div class="container" id="container"></div>
 
 <script>
-const slider = document.querySelector(".items");
 
-let isDown = false;
-let startX = 0;
-let scrollLeft = 0;
+const container=document.getElementById("container");
 
-slider.addEventListener("mousedown", (e) => {
-  isDown = true;
-  slider.classList.add("active");
+const rows=5;
+const cols=5;
 
-  startX = e.pageX - slider.offsetLeft;
-  scrollLeft = slider.scrollLeft;
+const size=90;
+const gap=20;
+
+let count=1;
+
+for(let r=0;r<rows;r++){
+
+    for(let c=0;c<cols;c++){
+
+        const cube=document.createElement("div");
+
+        cube.className="cube";
+
+        cube.innerText=count++;
+
+        cube.style.background=`hsl(${Math.random()*360},70%,55%)`;
+
+        cube.style.left=(gap+c*(size+gap))+"px";
+
+        cube.style.top=(gap+r*(size+gap))+"px";
+
+        container.appendChild(cube);
+    }
+}
+
+let currentCube=null;
+
+let offsetX=0;
+let offsetY=0;
+
+container.querySelectorAll(".cube").forEach(cube=>{
+
+    cube.addEventListener("mousedown",function(e){
+
+        currentCube=this;
+
+        currentCube.classList.add("dragging");
+
+        const rect=currentCube.getBoundingClientRect();
+
+        offsetX=e.clientX-rect.left;
+
+        offsetY=e.clientY-rect.top;
+
+    });
+
 });
 
-slider.addEventListener("mouseleave", () => {
-  isDown = false;
-  slider.classList.remove("active");
+document.addEventListener("mousemove",function(e){
+
+    if(!currentCube) return;
+
+    const containerRect=container.getBoundingClientRect();
+
+    let x=e.clientX-containerRect.left-offsetX;
+
+    let y=e.clientY-containerRect.top-offsetY;
+
+    const maxX=container.clientWidth-currentCube.offsetWidth;
+
+    const maxY=container.clientHeight-currentCube.offsetHeight;
+
+    x=Math.max(0,Math.min(x,maxX));
+
+    y=Math.max(0,Math.min(y,maxY));
+
+    currentCube.style.left=x+"px";
+
+    currentCube.style.top=y+"px";
+
 });
 
-slider.addEventListener("mouseup", () => {
-  isDown = false;
-  slider.classList.remove("active");
+document.addEventListener("mouseup",function(){
+
+    if(currentCube){
+
+        currentCube.classList.remove("dragging");
+
+        currentCube=null;
+
+    }
+
 });
 
-slider.addEventListener("mousemove", (e) => {
-  if (!isDown) return;
-
-  e.preventDefault();
-
-  const x = e.pageX - slider.offsetLeft;
-  const walk = (x - startX) * 2;
-
-  slider.scrollLeft = scrollLeft - walk;
-});
 </script>
 
 </body>
